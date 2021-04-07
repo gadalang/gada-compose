@@ -1,8 +1,22 @@
 """This module is for running program steps.
+
+A step configuration looks like:
+
+.. code-block:: yaml
+
+    steps:
+    - node: somenode
+    in:
+      param1: val1
+      param2: val2
+    out:
+      result1: ${{ ... }}
+      result2: ${{ ... }}
+
 """
 from __future__ import annotations
 
-__all__ = ["load_in_params", "store_out_params", "run"]
+__all__ = ["load_values", "store_values", "run"]
 import sys
 import os
 import asyncio
@@ -26,6 +40,7 @@ async def _run(node: str, data: dict):
 
                 await proc.wait()
 
+                # Avoid any deadlock
                 stdout.eof()
                 stderr.eof()
 
@@ -48,32 +63,66 @@ def store_value(value: str, env: dict):
     parser.execute(value, env)
 
 
-def load_in_params(params: dict, env: Optional[dict] = None) -> dict:
-    """Load input parameters based on step configuration.
+def load_values(params: dict, env: Optional[dict] = None) -> dict:
+    """Load input values required for running a single step based on ``params`` bindings.
 
-    For builtin types, just return the same dict:
+    For a single step taking two parameters ``a`` and ``b``, the configuration
+    will be something like:
+
+    .. code-block:: yaml
+
+        steps:
+        - node: somenode
+          in:
+            a: 1
+            b: 2
+
+    For builtin types, this function will just return the values unchanged:
 
     .. code-block:: python
 
         >>> from gada_compose import step
         >>>
-        >>> step.load_in_params({"a": 1, "b": 2})
+        >>> step.load_values({"a": 1, "b": 2})
         {'a': 1, 'b': 2}
         >>>
 
-    Evaluate and return the result of ``${{ }}`` blocks:
+    It's also possible to use a ``${{ }}`` block as parameter value:
+
+    .. code-block:: yaml
+
+        steps:
+        - node: somenode
+          in:
+            a: ${{ 1 + 1 }}
+
+    This function will evaluate and return the results of ``${{ }}`` blocks:
 
     .. code-block:: python
 
         >>> from gada_compose import step
         >>>
-        >>> step.load_in_params({"a": "${{ B }}"}, {"B": 1})
-        {'a': 1}
+        >>> step.load_values({"a": "${{ 1 + 1 }}"})
+        {'a': 2}
         >>>
 
-    :param params: input parameters from step configuration
+    This also allows for accessing variables passed in the ``env`` dictionary:
+
+    .. code-block:: python
+
+        >>> from gada_compose import step
+        >>>
+        >>> step.load_values({"a": "${{ B }}"}, env={"B": True})
+        {'a': True}
+        >>>
+
+    .. note::
+
+        The ``env`` dictionary is left unchanged.
+
+    :param params: a mapping {parameter: value}
     :param env: environment variables
-    :return: loaded parameters
+    :return: a mapping {parameter: value}
     """
     if not params:
         return {}
@@ -87,21 +136,43 @@ def load_in_params(params: dict, env: Optional[dict] = None) -> dict:
     raise Exception("expected a dict or str")
 
 
-def store_out_params(params: dict, values: dict, env: Optional[dict] = None) -> dict:
-    """Store output parameters based on step configuration:
+def store_values(params: dict, values: dict, env: Optional[dict] = None):
+    """Store output values produced by a single step based on ``params`` bindings.
+
+    For a single step producing two parameters ``a`` and ``b``, the configuration
+    will be something like:
+
+    .. code-block:: yaml
+
+        steps:
+        - node: somenode
+          out:
+            a: ${{ A = value }}
+            b: ${{ B = value }}
+
+    This function will execute ``${{ }}`` blocks for storing ``values`` in
+    the ``env`` dictionary:
 
     .. code-block:: python
 
         >>> from gada_compose import step
         >>>
         >>> env = {}
-        >>> step.store_out_params({"data": "${{ data = value }}"}, {"data": 1}, env=env)
+        >>> step.store_values(
+        ...     {"a": "${{ A = value }}" ,"b": "${{ B = value }}"},
+        ...     values={"a": 1, "b": 2},
+        ...     env=env
+        ... )
         >>> env
-        {'data': 1}
+        {'A': 1, 'B': 2}
         >>>
 
-    :param params: input parameters from step configuration
-    :param values: accessible values
+    .. note::
+
+        The ``env`` dictionary is modified with new values.
+
+    :param params: a mapping {parameter: expression}
+    :param values: output values produced by a step
     :param env: environment variables
     """
     if not params:
@@ -125,13 +196,33 @@ def store_out_params(params: dict, values: dict, env: Optional[dict] = None) -> 
 
 
 def run(step: dict, env: Optional[dict] = None):
+    """Run a single step, storing output values to the ``env`` dictionary:
+
+    .. code-block:: python
+
+        >>> from gada_compose import step, test_utils
+        >>>
+        >>> env = {}
+        >>> step.run({
+        ...     "node": "testnodes.json",
+        ...     "in": {"input": test_utils.data_path()},
+        ...     "out": {"data": "${{ data = value }}"}
+        ... }, env=env)
+        >>> env
+        {'data': {'a': '1', 'b': 2}}
+        >>>
+
+    :param step: step configuration
+    :param env: environment variables
+    """
     if "node" not in step:
         raise Exception("missing node attribute on step")
 
-    # Build input params
-    args = load_in_params(step.get("in", None), env)
+    # Load input values from env
+    args = load_values(step.get("in", None), env)
 
     # Run node
     result = asyncio.run(_run(step["node"], args))
 
-    store_out_params(step.get("out", None), result, env)
+    # Store output values to env
+    store_values(step.get("out", None), result, env)

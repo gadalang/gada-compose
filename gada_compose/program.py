@@ -1,25 +1,27 @@
 """This module is for running programs.
 
+A program configuration looks like:
+
 .. code-block:: yaml
 
     params:
-    - name: input
+    - name: target
     type: str
-    help: input JSON file
+    help: required parameter
     - name: --output
     type: str
-    help: output JSON file
-    default: output.json
+    help: optional parameter
     steps:
-    - node: lang.json
-    in:
-      input: ${{ input }}
-    out:
-      data: ${{ data }}
-    - node: lang.json
-    in:
-      data: ${{ data }}
-      output: ${{ output }}
+    - node: node1
+      in:
+        param: val
+      out:
+        result: ${{ }}
+    - node: node2
+      in:
+        param: val
+      out:
+        result: ${{ }}
 
 """
 from __future__ import annotations
@@ -51,7 +53,7 @@ def _get_param_type(name: str, value: str) -> type:
 
 
 def get_parser(prog: str, params: list[dict]) -> argparse.ArgumentParser:
-    """Get a parser for program parameters:
+    """Get a parser based on program parameters:
 
     .. code-block:: python
 
@@ -160,7 +162,10 @@ def run(prog: any, argv: list[str]):
 
         >>> from gada_compose import program, test_utils
         >>>
-        >>> program.run(test_utils.prog_path(), ["--output", test_utils.data2_path(), test_utils.data_path()])
+        >>> program.run(
+        ...     test_utils.prog_path(),
+        ...     ["--output", test_utils.data2_path(), test_utils.data_path()]
+        ... )
         >>>
 
     :param prog: file-like object or string

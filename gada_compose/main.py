@@ -25,10 +25,6 @@ def split_unknown_args(argv: list[str]) -> tuple[list[str], list[str]]:
     return argv, []
 
 
-def run_step(step: dict):
-    print(step)
-
-
 def run(
     prog: str,
     argv: Optional[list[str]] = None,
@@ -37,13 +33,21 @@ def run(
     stdout=None,
     stderr=None,
 ):
-    """Run a gada node:
+    """Run a program:
+
+    .. code-block:: python
+
+        >>> import gada_compose
+        >>> from gada_compose import test_utils
+        >>>
+        >>> gada_compose.run(test_utils.prog_path(), [test_utils.data_path()])
+        >>>
 
     The three parameters ``stdin``, ``stdout`` or ``stderr`` are provided as a convenience
     for writing unit tests when you can't use ``sys.stdin`` or ``sys.stdout``, or simply
     when you want to be able to read from the output.
 
-    :param node: node to run
+    :param prog: file-like object or str
     :param argv: additional CLI arguments
     :param stdin: input stream
     :param stdout: output stream
@@ -59,7 +63,15 @@ def main(
     stdout=None,
     stderr=None,
 ):
-    """Gada main:
+    """Main entrypoint:
+
+    .. code-block:: python
+
+        >>> import gada_compose
+        >>> from gada_compose import test_utils
+        >>>
+        >>> gada_compose.main(["gada-compose", test_utils.prog_path(), test_utils.data_path()])
+        >>>
 
     The three parameters ``stdin``, ``stdout`` or ``stderr`` are provided as a convenience
     for writing unit tests when you can't use ``sys.stdin`` or ``sys.stdout``, or simply

@@ -6,4 +6,6 @@
 
 .. automodule:: gada_compose
 
+.. automethod:: gada_compose::run
+
 .. automethod:: gada_compose::main
