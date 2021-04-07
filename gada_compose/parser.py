@@ -2,6 +2,7 @@
 evaluating expressions contained within ``${{ }}`` blocks.
 """
 from __future__ import annotations
+
 __all__ = ["evaluate", "execute"]
 import re
 from typing import Optional
@@ -60,6 +61,7 @@ def evaluate(value: str, env: Optional[dict] = None) -> any:
     :param env: environment variables
     :return: result
     """
+
     def replace(o):
         return str(eval(o.group(1).strip(), {}, env))
 
@@ -75,7 +77,7 @@ def evaluate(value: str, env: Optional[dict] = None) -> any:
         while old_value != new_value:
             old_value = new_value
             new_value = re.sub(r"\$\{\{(.*?)\}\}", replace, old_value)
-        
+
         return new_value
     except Exception as e:
         raise Exception(f"failed to evaluate {value}") from e

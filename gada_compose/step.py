@@ -1,6 +1,7 @@
 """This module is for running program steps.
 """
 from __future__ import annotations
+
 __all__ = ["load_in_params", "store_out_params", "run"]
 import sys
 import os
@@ -14,16 +15,13 @@ import pygada_runtime
 
 async def _run(node: str, data: dict):
     with pygada_runtime.PipeStream() as stdin:
-        with pygada_runtime.PipeStream() as stdout:     
+        with pygada_runtime.PipeStream() as stdout:
             with pygada_runtime.PipeStream(rmode="r") as stderr:
                 pygada_runtime.write_json(stdin, data)
                 stdin.eof()
 
                 proc = await pygada_runtime.run(
-                    node,
-                    stdin=stdin.reader,
-                    stdout=stdout,
-                    stderr=stderr
+                    node, stdin=stdin.reader, stdout=stdout, stderr=stderr
                 )
 
                 await proc.wait()
@@ -32,7 +30,9 @@ async def _run(node: str, data: dict):
                 stderr.eof()
 
                 if proc.returncode != 0:
-                    raise Exception("error during node execution") from Exception(await stderr.read())
+                    raise Exception("error during node execution") from Exception(
+                        await stderr.read()
+                    )
 
                 return await pygada_runtime.read_json(stdout)
 
@@ -83,7 +83,7 @@ def load_in_params(params: dict, env: Optional[dict] = None) -> dict:
     if isinstance(params, dict):
         # Dict object
         return {k: parse_value(v, env) for k, v in params.items()}
-    
+
     raise Exception("expected a dict or str")
 
 

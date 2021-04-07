@@ -25,9 +25,7 @@ def split_unknown_args(argv: list[str]) -> tuple[list[str], list[str]]:
     return argv, []
 
 
-def run_step(
-    step: dict
-):
+def run_step(step: dict):
     print(step)
 
 

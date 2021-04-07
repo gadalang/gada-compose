@@ -23,6 +23,7 @@
 
 """
 from __future__ import annotations
+
 __all__ = ["get_parser", "parse_args", "load", "run"]
 import sys
 import os
@@ -41,14 +42,11 @@ def _get_param_type(name: str, value: str) -> type:
     :param value: parameter type
     :return: Python type
     """
-    t = {
-        "str": str,
-        "int": int
-    }.get(value, None)
+    t = {"str": str, "int": int}.get(value, None)
 
     if not t:
         raise Exception(f"unknown type {value} for param {name}")
-    
+
     return t
 
 
@@ -84,13 +82,10 @@ def get_parser(prog: str, params: list[dict]) -> argparse.ArgumentParser:
 
     for _ in params:
         parser.add_argument(
-            _['name'],
+            _["name"],
             help=_.get("help", None),
-            type=_get_param_type(
-                _["name"],
-                _.get("type", "str")
-            ),
-            default=_.get("default", None)
+            type=_get_param_type(_["name"], _.get("type", "str")),
+            default=_.get("default", None),
         )
 
     return parser
@@ -176,9 +171,7 @@ def run(prog: any, argv: list[str]):
 
     # Parse arguments
     env = parse_args(
-        prog=config.get("name", "prog"),
-        params=config.get("params", []),
-        argv=argv
+        prog=config.get("name", "prog"), params=config.get("params", []), argv=argv
     )
 
     for _ in config.get("steps", []):

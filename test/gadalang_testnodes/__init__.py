@@ -10,7 +10,7 @@ import pygada_runtime
 
 async def run():
     data = await pygada_runtime.read_json(sys.stdin)
-    
+
     input = data.get("input", None)
     if input:
         with open(input, "r") as f:
@@ -28,8 +28,8 @@ async def run():
 
 def main(argv):
     """Entrypoint used with **python** runner."""
-    #parser = pygada_runtime.get_parser("json")
-    #pygada_runtime.main(run, parser, argv)
+    # parser = pygada_runtime.get_parser("json")
+    # pygada_runtime.main(run, parser, argv)
 
     asyncio.run(run())
 
