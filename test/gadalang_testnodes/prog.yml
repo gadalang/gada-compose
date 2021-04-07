@@ -1,0 +1,19 @@
+name: test_prog
+params:
+- name: input
+  type: str
+  help: input JSON file
+- name: --output
+  type: str
+  help: output JSON file
+  default: output.json
+steps:
+- node: testnodes.json
+  in:
+    input: ${{ input }}
+  out:
+    data: ${{ data = value }}
+- node: testnodes.json
+  in:
+    data: ${{ data }}
+    output: ${{ output }}

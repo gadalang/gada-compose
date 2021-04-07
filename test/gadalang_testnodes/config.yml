@@ -1,0 +1,4 @@
+nodes:
+  json:
+    runner: python
+    file: ${comp_dir}/__init__.py

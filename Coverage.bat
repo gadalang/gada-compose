@@ -1,0 +1,1 @@
+..\gada\venv\Scripts\coverage.exe run --source=gada_compose -m unittest discover -b && ..\gada\venv\Scripts\coverage.exe html
