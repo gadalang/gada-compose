@@ -32,7 +32,7 @@ setup(
         "Bug Tracker": "https://github.com/gadalang/gada-compose/issues",
         "Source Code": "https://github.com/gadalang/gada-compose/",
     },
-    description="Python frontend for mysql cli",
+    description="Automate, customize, and execute gada node workflows",
     long_description=readme(),
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=["tests"]),
