@@ -222,7 +222,7 @@ def run(step: dict, env: Optional[dict] = None):
     args = load_values(step.get("in", None), env)
 
     # Run node
-    result = asyncio.run(_run(step["node"], args))
+    result = asyncio.run(_run(parser.evaluate(step["node"], env), args))
 
     # Store output values to env
     store_values(step.get("out", None), result, env)
